@@ -44,7 +44,15 @@ app.put('/returns/:id', async (req, res) => {
     }
 });
 
-
+app.delete('/returns/:id', async (req, res) => {
+    console.log('Attempting to delete:', req.params.id);
+    try {
+        await ReturnItem.findByIdAndDelete(req.params.id);
+        res.json({ message: "Return deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting return" });
+    }
+});
 
 const PORT = 5001;
 app.listen(PORT, () => {
