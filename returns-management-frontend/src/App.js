@@ -4,6 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DarkModeProvider from './DarkModeProvider';
 import DarkThemeContext from './DarkThemeContext';
+import SimpleBarChart from './SimpleBarChart';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './App.css';
@@ -22,6 +23,8 @@ function DarkModeSwitcher() {
 function MainApp() {
   const [returns, setReturns] = useState([]);
   const [filteredReturns, setFilteredReturns] = useState([]);
+  const [data, setData] = useState([]);
+  const [newData, setDateChartData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('none');
   const [productName, setProductName] = useState("");
@@ -34,6 +37,17 @@ function MainApp() {
     async function fetchReturns() {
       const response = await axios.get('http://localhost:5001/returns');
       setReturns(response.data);
+      const dateCounts = response.data.reduce((acc, curr) => {
+        const date = new Date(curr.date).toLocaleDateString();
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {});
+
+      const newData = Object.keys(dateCounts).map(date => ({
+        date,
+        count: dateCounts[date],
+      }));
+      setDateChartData(newData);
     }
     fetchReturns();
   }, []);
@@ -46,6 +60,40 @@ function MainApp() {
     );
   }, [searchTerm, returns]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/returns');
+        setData(response.data);
+      } catch (error) {
+        console.error('Error fetching data', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // const statusCounts = returns.reduce((acc, curr) => {
+  //   acc[curr.status] = (acc[curr.status] || 0) + 1;
+  //   return acc;
+  // }, {});
+  
+  // const chartData = Object.keys(statusCounts).map(status => ({
+  //   status,
+  //   count: statusCounts[status],
+  // }));
+
+  const dateCounts = returns.reduce((acc, curr) => {
+    const date = new Date(curr.date).toLocaleDateString();
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {});
+  
+  const dateChartData = Object.keys(dateCounts).map(date => ({
+    date,
+    count: dateCounts[date],
+  }));
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newReturn = { productName, customerId, reason };
@@ -244,6 +292,7 @@ function MainApp() {
           </tbody>
         </table>
       </div>
+      <SimpleBarChart data={dateChartData} dataKey="date" />
     </div>
   );
 
@@ -251,7 +300,6 @@ function MainApp() {
 
 function App() {
   const { darkMode } = useContext(DarkThemeContext);
-
   const theme = createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
@@ -260,6 +308,7 @@ function App() {
       },
     },
   });
+
   return (
     <DarkModeProvider>
       <ThemeProvider theme={theme}>
