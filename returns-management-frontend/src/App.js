@@ -4,29 +4,25 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DarkModeProvider from './DarkModeProvider';
 import DarkThemeContext from './DarkThemeContext';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './App.css';
 
 import axios from 'axios';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#4caf50',
-    },
-  },
-});
 
 function DarkModeSwitcher() {
   const { darkMode, toggleDarkMode } = useContext(DarkThemeContext);
   return (
     <button onClick={toggleDarkMode}>
-      {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
     </button>
   );
 }
 
 function MainApp() {
   const [returns, setReturns] = useState([]);
+  const [filteredReturns, setFilteredReturns] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [productName, setProductName] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [reason, setReason] = useState("");
@@ -41,11 +37,22 @@ function MainApp() {
     fetchReturns();
   }, []);
 
+  useEffect(() => {
+    setFilteredReturns(
+      returns.filter((item) =>
+        item.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [searchTerm, returns]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newReturn = { productName, customerId, reason };
     const response = await axios.post('http://localhost:5001/returns', newReturn);
     setReturns([...returns, response.data]);
+    setProductName("");
+    setCustomerId("");
+    setReason("");
   };
 
   const handleUpdate = async (id, updatedReturn) => {
@@ -68,6 +75,10 @@ function MainApp() {
     }
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   const handleEdit = (item) => {
     setCurrentReturn(item);
     setIsModalOpen(true);
@@ -75,6 +86,14 @@ function MainApp() {
 
   return (
     <div className="App">
+      <TextField
+        id="search"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        label="Search by Product Name"
+        variant="outlined"
+        margin="normal"
+      />
       <form onSubmit={handleSubmit}>
         <TextField
           id="outlined-basic"
@@ -166,7 +185,7 @@ function MainApp() {
             </tr>
           </thead>
           <tbody>
-            {returns.map(item => (
+            {filteredReturns.map(item => (
               <tr key={item._id}>
                 <td>{item.productName}</td>
                 <td>{item.customerId}</td>
@@ -193,9 +212,20 @@ function MainApp() {
       </div>
     </div>
   );
+
 }
 
 function App() {
+  const { darkMode } = useContext(DarkThemeContext);
+
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      primary: {
+        main: '#4caf50',
+      },
+    },
+  });
   return (
     <DarkModeProvider>
       <ThemeProvider theme={theme}>
