@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { ThemeProvider, createTheme, Button, TextField, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, Button, TextField, CssBaseline, Select, MenuItem } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DarkModeProvider from './DarkModeProvider';
@@ -23,6 +23,7 @@ function MainApp() {
   const [returns, setReturns] = useState([]);
   const [filteredReturns, setFilteredReturns] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('none');
   const [productName, setProductName] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [reason, setReason] = useState("");
@@ -84,6 +85,25 @@ function MainApp() {
     setIsModalOpen(true);
   };
 
+  let sortedReturns = [...filteredReturns];
+
+  switch (sortOrder) {
+    case 'productNameAsc':
+      sortedReturns.sort((a, b) => a.productName.localeCompare(b.productName));
+      break;
+    case 'productNameDesc':
+      sortedReturns.sort((a, b) => b.productName.localeCompare(a.productName));
+      break;
+    case 'customerIdAsc':
+      sortedReturns.sort((a, b) => a.customerId - b.customerId);
+      break;
+    case 'customerIdDesc':
+      sortedReturns.sort((a, b) => b.customerId - a.customerId);
+      break;
+    default:
+      sortedReturns = filteredReturns;
+  }
+
   return (
     <div className="App">
       <TextField
@@ -125,6 +145,20 @@ function MainApp() {
           Submit Return
         </Button>
       </form>
+      <br />
+      <Select
+        value={sortOrder}
+        onChange={e => setSortOrder(e.target.value)}
+        variant="outlined"
+        margin="normal"
+        autoWidth
+      >
+        <MenuItem value="none">None</MenuItem>
+        <MenuItem value="productNameAsc">Product Name (A-Z)</MenuItem>
+        <MenuItem value="productNameDesc">Product Name (Z-A)</MenuItem>
+        <MenuItem value="customerIdAsc">Customer ID (Low to High)</MenuItem>
+        <MenuItem value="customerIdDesc">Customer ID (High to Low)</MenuItem>
+      </Select>
       {isModalOpen && (
         <div className="backdrop" onClick={() => setIsModalOpen(false)}>
           <div className="edit-modal" onClick={e => e.stopPropagation()}>
@@ -185,7 +219,7 @@ function MainApp() {
             </tr>
           </thead>
           <tbody>
-            {filteredReturns.map(item => (
+            {sortedReturns.map(item => (
               <tr key={item._id}>
                 <td>{item.productName}</td>
                 <td>{item.customerId}</td>
