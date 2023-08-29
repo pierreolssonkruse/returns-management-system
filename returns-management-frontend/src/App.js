@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { ThemeProvider, createTheme, Button, TextField, CssBaseline, Select, MenuItem } from '@mui/material';
+import { ThemeProvider, createTheme, Button, TextField, CssBaseline, Select, MenuItem, AppBar, Toolbar, IconButton, Menu, Typography } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DarkModeProvider from './DarkModeProvider';
@@ -72,28 +73,18 @@ function MainApp() {
     fetchData();
   }, []);
 
-  // const statusCounts = returns.reduce((acc, curr) => {
-  //   acc[curr.status] = (acc[curr.status] || 0) + 1;
-  //   return acc;
-  // }, {});
-  
-  // const chartData = Object.keys(statusCounts).map(status => ({
-  //   status,
-  //   count: statusCounts[status],
-  // }));
-
   const dateCounts = returns.reduce((acc, curr) => {
     const date = new Date(curr.date).toLocaleDateString();
     acc[date] = (acc[date] || 0) + 1;
     return acc;
   }, {});
-  
+
   const dateChartData = Object.keys(dateCounts).map(date => ({
     date,
     count: dateCounts[date],
   }));
-  
-  
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newReturn = { productName, customerId, reason };
@@ -300,6 +291,9 @@ function MainApp() {
 
 function App() {
   const { darkMode } = useContext(DarkThemeContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const isMenuOpen = Boolean(anchorEl);
+
   const theme = createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
@@ -309,13 +303,45 @@ function App() {
     },
   });
 
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <DarkModeProvider>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleMenu}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={isMenuOpen}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>Item 1</MenuItem>
+              <MenuItem onClick={handleClose}>Item 2</MenuItem>
+              <MenuItem onClick={handleClose}>Item 3</MenuItem>
+            </Menu>
+            <Typography variant="h6" style={{ flexGrow: 1 }}>
+              Returns Management System
+            </Typography>
+            <DarkModeSwitcher />
+          </Toolbar>
+        </AppBar>
         <div className="App">
           <MainApp />
-          <DarkModeSwitcher />
         </div>
       </ThemeProvider>
     </DarkModeProvider>
