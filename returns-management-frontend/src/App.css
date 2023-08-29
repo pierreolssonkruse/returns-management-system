@@ -37,8 +37,8 @@ body {
   color: #ffffff;
 }
 
-
-.dark-mode a, .dark-mode button {
+.dark-mode a,
+.dark-mode button {
   color: #bb86fc;
 }
 
@@ -71,7 +71,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  /* height: 100vh; */
 }
 
 table {
@@ -79,7 +79,8 @@ table {
   width: 80%;
   max-width: 1000px;
 }
-th, td {
+th,
+td {
   border: 1px solid #ccc;
   padding: 8px 12px;
   text-align: left;
